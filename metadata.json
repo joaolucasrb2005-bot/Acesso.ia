@@ -1,0 +1,6 @@
+{
+  "name": "Sistema de Login e Senha",
+  "description": "Sistema simples e seguro de login e validação de credenciais em HTML, CSS e JavaScript puro.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

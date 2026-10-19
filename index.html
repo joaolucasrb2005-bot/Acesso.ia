@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Login e Senha</title>
+  <meta name="description" content="Sistema simples e seguro de login e validação de credenciais em HTML, CSS e JavaScript puro." />
+  <meta property="og:title" content="Sistema de Login e Senha" />
+  <meta property="og:description" content="Sistema simples e seguro de login e validação de credenciais em HTML, CSS e JavaScript puro." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <style>
+    /* =========================================================
+       RESET E CONFIGURAÇÕES BÁSICAS
+       ========================================================= */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      color: #0f172a;
+      padding: 1.25rem;
+    }
+
+    /* =========================================================
+       CARTÃO PRINCIPAL CENTRALIZADO
+       ========================================================= */
+    .card-container {
+      width: 100%;
+      max-width: 440px;
+      background: #ffffff;
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .card-header {
+      padding: 2.25rem 2rem 1.25rem;
+      text-align: center;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .card-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 1rem;
+      border-radius: 1rem;
+      background: #eff6ff;
+      color: #2563eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+    }
+
+    .card-icon.success {
+      background: #ecfdf5;
+      color: #16a34a;
+      box-shadow: 0 4px 10px rgba(22, 163, 74, 0.15);
+    }
+
+    .card-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.025em;
+    }
+
+    .card-header p {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-top: 0.35rem;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    /* =========================================================
+       CAMPOS DO FORMULÁRIO E LABELS
+       ========================================================= */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 0.5rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      padding: 0 1rem;
+      font-size: 0.95rem;
+      color: #0f172a;
+      background-color: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 0.75rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      background-color: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    .form-input.has-toggle {
+      padding-right: 3rem;
+    }
+
+    .form-input:disabled {
+      background-color: #f1f5f9;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* Botão Mostrar / Ocultar Senha */
+    .btn-toggle-password {
+      position: absolute;
+      right: 0.6rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: 0.5rem;
+      cursor: pointer;
+      color: #64748b;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .btn-toggle-password:hover {
+      color: #0f172a;
+      background-color: #e2e8f0;
+    }
+
+    .btn-toggle-password:focus-visible {
+      outline: 2px solid #2563eb;
+    }
+
+    /* =========================================================
+       ÁREA DE MENSAGENS DE FEEDBACK (ERRO E SUCESSO)
+       ========================================================= */
+    .mensagem-container {
+      display: none;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.875rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
+      animation: fadeIn 0.25s ease forwards;
+    }
+
+    /* Estado de Erro: Vermelho */
+    .mensagem-container.erro {
+      display: flex;
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+    }
+
+    /* Estado de Sucesso: Verde */
+    .mensagem-container.sucesso {
+      display: flex;
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #16a34a;
+    }
+
+    /* Estado Informativo / Atenção */
+    .mensagem-container.aviso {
+      display: flex;
+      background-color: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #d97706;
+    }
+
+    .mensagem-icon {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+    }
+
+    /* =========================================================
+       BOTÕES PRINCIPAIS
+       ========================================================= */
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      background-color: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: #1d4ed8;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+      background-color: #94a3b8;
+      box-shadow: none;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      height: 48px;
+      background-color: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      margin-top: 1.5rem;
+    }
+
+    .btn-secondary:hover {
+      background-color: #e2e8f0;
+      color: #0f172a;
+    }
+
+    /* =========================================================
+       TELA DE BOAS-VINDAS
+       ========================================================= */
+    #telaBoasVindas {
+      display: none;
+      text-align: center;
+      padding: 0.5rem 0;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.25rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 700;
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .welcome-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.35rem;
+    }
+
+    .welcome-subtitle {
+      font-size: 0.95rem;
+      color: #16a34a;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .session-info {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      text-align: left;
+      font-size: 0.85rem;
+      color: #475569;
+    }
+
+    .session-info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.35rem 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+
+    .session-info-item:last-child {
+      border-bottom: none;
+    }
+
+    /* =========================================================
+       PAINEL DE USUÁRIOS DE TESTE (GUIA RÁPIDO)
+       ========================================================= */
+    .test-users-panel {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .test-users-header {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-bottom: 0.6rem;
+      text-align: center;
+    }
+
+    .test-users-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+    }
+
+    .chip-btn {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+      padding: 0.3rem 0.65rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .chip-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+
+    .chip-btn strong {
+      color: #2563eb;
+    }
+
+    /* Tentativas badge */
+    .attempts-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+      margin-top: 0.5rem;
+      text-align: center;
+      width: 100%;
+    }
+
+    /* =========================================================
+       ANIMAÇÕES
+       ========================================================= */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .shake {
+      animation: shake 0.4s ease;
+    }
+
+    /* Rodapé discreto */
+    .footer-text {
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: #64748b;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================
+       CARTÃO PRINCIPAL
+       ========================================================= -->
+  <main class="card-container" id="cardContainer">
+
+    <!-- CABEÇALHO DO CARTÃO -->
+    <header class="card-header" id="cardHeader">
+      <div class="card-icon" id="headerIcon" aria-hidden="true">
+        <!-- Ícone de Cadeado em SVG -->
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h1 id="headerTitle">Acesso ao Sistema</h1>
+      <p id="headerSubtitle">Informe suas credenciais para continuar</p>
+    </header>
+
+    <!-- CORPO DO CARTÃO -->
+    <div class="card-body">
+
+      <!-- =====================================================
+           TELA 1: FORMULÁRIO DE LOGIN
+           ===================================================== -->
+      <section id="telaLogin" aria-label="Formulário de Autenticação">
+        <form id="formularioLogin" novalidate>
+
+          <!-- Mensagem de Feedback (Erro ou Alerta) -->
+          <div id="caixaMensagem" class="mensagem-container" role="alert" aria-live="polite">
+            <span class="mensagem-icon" id="caixaMensagemIcon"></span>
+            <span id="caixaMensagemTexto"></span>
+          </div>
+
+          <!-- Campo Usuário -->
+          <div class="form-group">
+            <label for="campoUsuario" class="form-label">Usuário</label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="campoUsuario"
+                class="form-input"
+                placeholder="Ex: admin, maria ou joao"
+                autocomplete="username"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Campo Senha com botão Mostrar/Ocultar -->
+          <div class="form-group">
+            <label for="campoSenha" class="form-label">Senha</label>
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="campoSenha"
+                class="form-input has-toggle"
+                placeholder="Digite sua senha"
+                autocomplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                id="btnAlternarSenha"
+                class="btn-toggle-password"
+                aria-label="Mostrar senha"
+                title="Mostrar senha"
+              >
+                <!-- Ícone Olho Fechado (inicial) -->
+                <svg id="iconeOlhoFechado" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+                <!-- Ícone Olho Aberto (oculto inicialmente) -->
+                <svg id="iconeOlhoAberto" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Botão Entrar -->
+          <button type="submit" id="btnEntrar" class="btn-primary">
+            <span>Entrar</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+          </button>
+
+          <!-- Indicador de Tentativas Restantes -->
+          <div class="attempts-badge" id="indicadorTentativas">
+            3 tentativas restantes
+          </div>
+
+        </form>
+
+        <!-- Atalhos rápidos com usuários pré-cadastrados para teste -->
+        <div class="test-users-panel">
+          <div class="test-users-header">Contas cadastradas para teste:</div>
+          <div class="test-users-chips">
+            <button type="button" class="chip-btn" onclick="preencherTeste('admin', '1234')">
+              <strong>admin</strong>: 1234
+            </button>
+            <button type="button" class="chip-btn" onclick="preencherTeste('maria', 'senha123')">
+              <strong>maria</strong>: senha123
+            </button>
+            <button type="button" class="chip-btn" onclick="preencherTeste('joao', 'abc@2026')">
+              <strong>joao</strong>: abc@2026
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           TELA 2: BOAS-VINDAS (APÓS LOGIN BEM-SUCEDIDO)
+           ===================================================== -->
+      <section id="telaBoasVindas" aria-label="Painel do Usuário">
+        <!-- Avatar com inicial do usuário -->
+        <div class="user-avatar" id="avatarUsuario">U</div>
+
+        <h2 class="welcome-title">
+          Olá, <span id="nomeExibicaoUsuario"></span>!
+        </h2>
+
+        <!-- Mensagem de Sucesso em Verde solicitada no requisito -->
+        <div class="welcome-subtitle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Login realizado com sucesso!</span>
+        </div>
+
+        <!-- Detalhes da Sessão -->
+        <div class="session-info">
+          <div class="session-info-item">
+            <span>Usuário autenticado:</span>
+            <strong id="detalheLoginUsuario">-</strong>
+          </div>
+          <div class="session-info-item">
+            <span>Nível de acesso:</span>
+            <span id="detalhePerfilUsuario">Usuário Padrão</span>
+          </div>
+          <div class="session-info-item">
+            <span>Status da sessão:</span>
+            <strong style="color: #16a34a;">Ativa</strong>
+          </div>
+        </div>
+
+        <!-- Botão Sair -->
+        <button type="button" id="btnSair" class="btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Sair</span>
+        </button>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer-text">
+    Sistema de Autenticação Local &bull; Sem dependências externas
+  </footer>
+
+  <!-- =========================================================
+       JAVASCRIPT: LÓGICA DO SISTEMA
+       ========================================================= -->
+  <script>
+    /* =========================================================
+       1. BASE DE DADOS LOCAL DE USUÁRIOS CADASTRADOS
+       ========================================================= */
+    const USUARIOS_CADASTRADOS = [
+      { usuario: "admin", senha: "1234", nome: "Administrador", perfil: "Administrador Geral" },
+      { usuario: "maria", senha: "senha123", nome: "Maria Silva", perfil: "Gerente de Contas" },
+      { usuario: "joao", senha: "abc@2026", nome: "João Lucas", perfil: "Desenvolvedor" }
+    ];
+
+    // Constante de limite máximo de tentativas permitidas
+    const LIMITE_TENTATIVAS = 3;
+
+    // Estado da aplicação
+    let tentativasRestantes = LIMITE_TENTATIVAS;
+    let senhaVisivel = false;
+
+    /* =========================================================
+       2. ELEMENTOS DO DOM
+       ========================================================= */
+    const formularioLogin = document.getElementById("formularioLogin");
+    const campoUsuario = document.getElementById("campoUsuario");
+    const campoSenha = document.getElementById("campoSenha");
+    const btnEntrar = document.getElementById("btnEntrar");
+    const btnAlternarSenha = document.getElementById("btnAlternarSenha");
+    const iconeOlhoAberto = document.getElementById("iconeOlhoAberto");
+    const iconeOlhoFechado = document.getElementById("iconeOlhoFechado");
+
+    const caixaMensagem = document.getElementById("caixaMensagem");
+    const caixaMensagemTexto = document.getElementById("caixaMensagemTexto");
+    const caixaMensagemIcon = document.getElementById("caixaMensagemIcon");
+    const indicadorTentativas = document.getElementById("indicadorTentativas");
+
+    const telaLogin = document.getElementById("telaLogin");
+    const telaBoasVindas = document.getElementById("telaBoasVindas");
+    const btnSair = document.getElementById("btnSair");
+    const cardContainer = document.getElementById("cardContainer");
+
+    const headerIcon = document.getElementById("headerIcon");
+    const headerTitle = document.getElementById("headerTitle");
+    const headerSubtitle = document.getElementById("headerSubtitle");
+
+    const avatarUsuario = document.getElementById("avatarUsuario");
+    const nomeExibicaoUsuario = document.getElementById("nomeExibicaoUsuario");
+    const detalheLoginUsuario = document.getElementById("detalheLoginUsuario");
+    const detalhePerfilUsuario = document.getElementById("detalhePerfilUsuario");
+
+    /* =========================================================
+       3. FUNÇÃO PARA SANITIZAR STRINGS (PROTEÇÃO CONTRA XSS/HTML)
+       ========================================================= */
+    /**
+     * Converte caracteres especiais em entidades HTML seguras.
+     * Além disso, a inserção no DOM usa textContent para proteção em dobro.
+     * @param {string} texto
+     * @returns {string} Texto seguro
+     */
+    function protegerTexto(texto) {
+      if (typeof texto !== "string") return "";
+      return texto
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    /* =========================================================
+       4. FUNÇÃO PARA EXIBIR MENSAGENS DE FEEDBACK (ERRO/SUCESSO)
+       ========================================================= */
+    /**
+     * Exibe ou oculta a mensagem na interface com o estilo apropriado.
+     * @param {string} texto - Mensagem a ser exibida (vazio para ocultar)
+     * @param {"erro" | "sucesso" | "aviso"} tipo - Classe visual do feedback
+     */
+    function mostrarMensagem(texto, tipo = "erro") {
+      if (!texto) {
+        caixaMensagem.style.display = "none";
+        caixaMensagem.className = "mensagem-container";
+        caixaMensagemTexto.textContent = "";
+        return;
+      }
+
+      // Define a classe CSS correspondente
+      caixaMensagem.className = `mensagem-container ${tipo}`;
+      caixaMensagem.style.display = "flex";
+
+      // Ícone adequado conforme o tipo de mensagem
+      if (tipo === "erro") {
+        caixaMensagemIcon.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        `;
+      } else if (tipo === "sucesso") {
+        caixaMensagemIcon.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        `;
+      } else {
+        caixaMensagemIcon.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        `;
+      }
+
+      // Preenche o texto com segurança
+      caixaMensagemTexto.textContent = texto;
+
+      // Efeito sutil de tremor no cartão caso seja erro
+      if (tipo === "erro") {
+        cardContainer.classList.remove("shake");
+        // Força reflow do elemento para reiniciar a animação
+        void cardContainer.offsetWidth;
+        cardContainer.classList.add("shake");
+      }
+    }
+
+    /* =========================================================
+       5. FUNÇÃO PARA EXIBIR A TELA DE BOAS-VINDAS
+       ========================================================= */
+    /**
+     * Alterna a interface para o painel de boas-vindas do usuário.
+     * @param {Object} usuarioAutenticado - Dados do usuário validado
+     */
+    function exibirTelaBoasVindas(usuarioAutenticado) {
+      // Oculta tela de login e exibe tela de boas-vindas
+      telaLogin.style.display = "none";
+      telaBoasVindas.style.display = "block";
+
+      // Atualiza o cabeçalho do cartão
+      headerIcon.className = "card-icon success";
+      headerIcon.innerHTML = `
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      `;
+      headerTitle.textContent = "Área Restrita";
+      headerSubtitle.textContent = "Sessão iniciada com sucesso";
+
+      // Define o nome de forma totalmente segura (textContent impede injeção HTML)
+      const nomeLimpo = protegerTexto(usuarioAutenticado.nome || usuarioAutenticado.usuario);
+      nomeExibicaoUsuario.textContent = usuarioAutenticado.nome || usuarioAutenticado.usuario;
+
+      // Define a inicial no avatar circular
+      const inicial = (usuarioAutenticado.nome || usuarioAutenticado.usuario || "U").trim().charAt(0).toUpperCase();
+      avatarUsuario.textContent = inicial;
+
+      // Preenche dados adicionais de sessão
+      detalheLoginUsuario.textContent = usuarioAutenticado.usuario;
+      detalhePerfilUsuario.textContent = usuarioAutenticado.perfil || "Usuário Autorizado";
+
+      // Limpa os campos para segurança futura
+      campoSenha.value = "";
+    }
+
+    /* =========================================================
+       6. FUNÇÃO PARA VALIDAR O LOGIN
+       ========================================================= */
+    /**
+     * Valida os campos, verifica tentativas e autentica as credenciais.
+     */
+    function validarLogin() {
+      // Se já atingiu o limite de tentativas, impede execução
+      if (tentativasRestantes <= 0) {
+        mostrarMensagem("Acesso bloqueado por excesso de tentativas. Recarregue a página.", "erro");
+        return;
+      }
+
+      const usuarioDigitado = campoUsuario.value.trim();
+      const senhaDigitada = campoSenha.value;
+
+      // 1. Verificação de campos vazios
+      if (!usuarioDigitado || !senhaDigitada) {
+        mostrarMensagem("Preencha usuário e senha.", "erro");
+        if (!usuarioDigitado) {
+          campoUsuario.focus();
+        } else {
+          campoSenha.focus();
+        }
+        return;
+      }
+
+      // 2. Busca o usuário correspondente na lista cadastrada
+      const usuarioEncontrado = USUARIOS_CADASTRADOS.find(
+        (u) => u.usuario.toLowerCase() === usuarioDigitado.toLowerCase() && u.senha === senhaDigitada
+      );
+
+      // 3. Se as credenciais estiverem corretas
+      if (usuarioEncontrado) {
+        // Limpa mensagem de erro e restaura contagem
+        mostrarMensagem("", "sucesso");
+        tentativasRestantes = LIMITE_TENTATIVAS;
+        atualizarIndicadorTentativas();
+
+        // Exibe a tela de boas-vindas
+        exibirTelaBoasVindas(usuarioEncontrado);
+        return;
+      }
+
+      // 4. Se credenciais estiverem incorretas: subtrai tentativa
+      tentativasRestantes--;
+      atualizarIndicadorTentativas();
+
+      // Verifica se ainda restam tentativas
+      if (tentativasRestantes > 0) {
+        const textoTentativa = tentativasRestantes === 1 ? "resta 1 tentativa" : `restam ${tentativasRestantes} tentativas`;
+        mostrarMensagem(`Usuário ou senha incorretos (${textoTentativa}).`, "erro");
+        campoSenha.value = "";
+        campoSenha.focus();
+      } else {
+        // Bloqueia o botão e os campos
+        bloquearAcesso();
+      }
+    }
+
+    /* =========================================================
+       7. FUNÇÃO PARA BLOQUEAR O ACESSO APÓS 3 TENTATIVAS
+       ========================================================= */
+    function bloquearAcesso() {
+      btnEntrar.disabled = true;
+      campoUsuario.disabled = true;
+      campoSenha.disabled = true;
+      btnAlternarSenha.disabled = true;
+
+      indicadorTentativas.textContent = "Botão bloqueado por segurança.";
+      indicadorTentativas.style.color = "#dc2626";
+
+      mostrarMensagem(
+        "Acesso bloqueado! 3 tentativas incorretas consecutivas. O botão de entrar foi desabilitado.",
+        "erro"
+      );
+    }
+
+    /* =========================================================
+       8. ATUALIZADOR VISUAL DO INDICADOR DE TENTATIVAS
+       ========================================================= */
+    function atualizarIndicadorTentativas() {
+      if (tentativasRestantes === LIMITE_TENTATIVAS) {
+        indicadorTentativas.textContent = `${LIMITE_TENTATIVAS} tentativas restantes`;
+        indicadorTentativas.style.color = "#64748b";
+      } else if (tentativasRestantes > 0) {
+        const plural = tentativasRestantes === 1 ? "tentativa restante" : "tentativas restantes";
+        indicadorTentativas.textContent = `${tentativasRestantes} ${plural}`;
+        indicadorTentativas.style.color = "#d97706";
+      }
+    }
+
+    /* =========================================================
+       9. FUNÇÃO PARA MOSTRAR / OCULTAR SENHA
+       ========================================================= */
+    function alternarVisibilidadeSenha() {
+      senhaVisivel = !senhaVisivel;
+
+      if (senhaVisivel) {
+        campoSenha.type = "text";
+        iconeOlhoFechado.style.display = "none";
+        iconeOlhoAberto.style.display = "block";
+        btnAlternarSenha.setAttribute("aria-label", "Ocultar senha");
+        btnAlternarSenha.setAttribute("title", "Ocultar senha");
+      } else {
+        campoSenha.type = "password";
+        iconeOlhoFechado.style.display = "block";
+        iconeOlhoAberto.style.display = "none";
+        btnAlternarSenha.setAttribute("aria-label", "Mostrar senha");
+        btnAlternarSenha.setAttribute("title", "Mostrar senha");
+      }
+    }
+
+    /* =========================================================
+       10. FUNÇÃO PARA SAIR (LOGOUT)
+       ========================================================= */
+    function fazerLogout() {
+      // Volta para a tela de login
+      telaBoasVindas.style.display = "none";
+      telaLogin.style.display = "block";
+
+      // Restaura o cabeçalho original
+      headerIcon.className = "card-icon";
+      headerIcon.innerHTML = `
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      `;
+      headerTitle.textContent = "Acesso ao Sistema";
+      headerSubtitle.textContent = "Informe suas credenciais para continuar";
+
+      // Limpa os campos e mensagens
+      campoUsuario.value = "";
+      campoSenha.value = "";
+      mostrarMensagem("", "erro");
+
+      // Foca no primeiro campo
+      campoUsuario.focus();
+    }
+
+    /* =========================================================
+       11. ATALHO PARA TESTES (PREENCHIMENTO AUTOMÁTICO)
+       ========================================================= */
+    /**
+     * Facilita os testes permitindo preencher credenciais ao clicar no botão de teste.
+     */
+    function preencherTeste(usuario, senha) {
+      if (tentativasRestantes <= 0) return;
+      campoUsuario.value = usuario;
+      campoSenha.value = senha;
+      mostrarMensagem("", "erro");
+      campoSenha.focus();
+    }
+
+    /* =========================================================
+       12. CONFIGURAÇÃO DE EVENTOS (LISTENERS)
+       ========================================================= */
+    // Submissão do formulário (ao clicar em 'Entrar' ou pressionar 'Enter')
+    formularioLogin.addEventListener("submit", function (evento) {
+      evento.preventDefault(); // Impede o recarregamento da página
+      validarLogin();
+    });
+
+    // Clique no botão mostrar/ocultar senha
+    btnAlternarSenha.addEventListener("click", alternarVisibilidadeSenha);
+
+    // Clique no botão sair da tela de boas-vindas
+    btnSair.addEventListener("click", fazerLogout);
+
+    // Limpa a mensagem de erro quando o usuário começar a digitar novamente
+    campoUsuario.addEventListener("input", function () {
+      if (caixaMensagem.style.display !== "none" && tentativasRestantes > 0) {
+        mostrarMensagem("", "erro");
+      }
+    });
+
+    campoSenha.addEventListener("input", function () {
+      if (caixaMensagem.style.display !== "none" && tentativasRestantes > 0) {
+        mostrarMensagem("", "erro");
+      }
+    });
+
+    // Foco inicial no campo de usuário ao carregar a página
+    window.addEventListener("DOMContentLoaded", function () {
+      campoUsuario.focus();
+    });
+  </script>
+</body>
+</html>
